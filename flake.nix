@@ -97,9 +97,19 @@
           '';
         };
 
+        make-graph = pkgs.writeShellApplication {
+          name = "make-graph";
+          text = ''
+            # shellcheck disable=SC2016
+            ${lib.getExe pkgs.nix-visualize} "$(nix develop --command bash -c 'echo $NIX_GCROOT')" --output minimal.svg --configfile nix-visualize.ini
+            ${lib.getExe pkgs.imagemagick} minimal.svg minimal.png
+          '';
+        };
       in
       {
         devShells.default = devshell;
+
+        packages.default = make-graph;
 
         formatter = pkgs.nixfmt-tree;
       }
