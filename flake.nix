@@ -33,10 +33,12 @@
       system:
       let
         pkgs = import nixpkgs { inherit system; };
+        pkgsDevshell = pkgs.pkgsMusl;
 
+        # Doesn't handle anything fancy, just enough to cover its use in setting up the devShell
         mkdir-minimal =
           let
-            src = pkgs.writeTextFile {
+            src = pkgsDevshell.writeTextFile {
               name = "mkdir.c";
               text = ''
                 #include <sys/stat.h>
@@ -47,27 +49,51 @@
               '';
             };
           in
-          pkgs.stdenv.mkDerivation {
+          pkgsDevshell.stdenv.mkDerivation {
             name = "mkdir";
             dontUnpack = true;
             buildPhase = ''
-              ${pkgs.stdenv.cc.targetPrefix}cc ${src} -o mkdir
+              ${pkgsDevshell.stdenv.cc.targetPrefix}cc ${src} -o mkdir
             '';
             installPhase = ''
               install -m755 -D -t $out/bin mkdir
             '';
           };
 
-        cat-minimal = pkgs.writeShellApplication {
-          name = "cat";
-          text = ''
-            echo "$(<"''${1}" )"
-          '';
-        };
+        # Doesn't handle anything fancy, just enough to cover its use in setting up the devShell
+        cat-minimal =
+          let
+            src = pkgsDevshell.writeTextFile {
+              name = "cat.c";
+              text = ''
+                #include <stdio.h>
+                int main(int argc, char* argv[]) {
+                  FILE *fptr;
+                  fptr = fopen(argv[1], "r");
+                  char s[1024];
+                  while(fgets(s, 1024, fptr)) {
+                    printf("%s", s);
+                  }
+                  fclose(fptr);
+                }
+              '';
+            };
+          in
+          pkgsDevshell.stdenv.mkDerivation {
+            name = "cat";
+            dontUnpack = true;
+            buildPhase = ''
+              ${pkgsDevshell.stdenv.cc.targetPrefix}cc ${src} -o cat
+            '';
+            installPhase = ''
+              install -m755 -D -t $out/bin cat
+            '';
+          };
 
         # Just an experiment
         # https://fzakaria.com/2021/08/02/a-minimal-nix-shell.html
-        stdenv-minimal = pkgs.stdenvNoCC.override {
+        # https://discourse.nixos.org/t/smaller-stdenv-for-shells/28970
+        stdenv-minimal = pkgsDevshell.stdenvNoCC.override {
           cc = null;
           preHook = "";
           allowedRequisites = null;
@@ -80,10 +106,11 @@
             mkdir-minimal
             cat-minimal
           ];
+          shell = "${pkgsDevshell.bash}/bin/bash";
           extraNativeBuildInputs = [ ];
         };
 
-        mkShell-minimal = pkgs.mkShell.override {
+        mkShell-minimal = pkgsDevshell.mkShell.override {
           stdenv = stdenv-minimal;
         };
 

@@ -7,4 +7,8 @@ $ nix path-info --closure-size --human-readable $(nix develop --command bash -c 
 /nix/store/0pdgy5pwsjp6cqmk98yf4zx30gj7nigm-minimal-env   33.1 MiB
 ```
 
+```console
+$ nix run nixpkgs#nix-tree -- $(nix develop --command bash -c 'echo ${NIX_GCROOT}')
+```
+
 ![Graph](minimal.png)
