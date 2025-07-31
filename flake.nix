@@ -124,11 +124,24 @@
           '';
         };
 
-        make-graph = pkgs.writeShellApplication {
+        make-graph = let
+            configFile = pkgsDevshell.writeTextFile {
+              name = "nix-visualize.ini";
+              text = ''
+                [minimal]
+                aspect_ratio = 1.0
+                dpi = 300
+                font_scale = 1.5
+                edge_alpha = 0.8
+                attractive_force_normalization = 1.5
+              '';
+            };
+          in
+          pkgs.writeShellApplication {
           name = "make-graph";
           text = ''
             # shellcheck disable=SC2016
-            ${lib.getExe pkgs.nix-visualize} "$(nix develop --command bash -c 'echo $NIX_GCROOT')" --output minimal.svg --configfile nix-visualize.ini
+            ${lib.getExe pkgs.nix-visualize} "$(nix develop --command bash -c 'echo $NIX_GCROOT')" --output minimal.svg --configfile ${configFile}
             ${lib.getExe pkgs.imagemagick} minimal.svg minimal.png
           '';
         };
