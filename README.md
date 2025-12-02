@@ -4,7 +4,7 @@ Based on https://fzakaria.com/2021/08/02/a-minimal-nix-shell.html . Now without 
 
 ```console
 $ nix path-info --closure-size --human-readable $(nix develop --command bash -c 'echo ${NIX_GCROOT}')
-/nix/store/vfr941260fa6ifazbw45xjg5f1a6g7q7-minimal-env    9.7 MiB
+/nix/store/yl5va82skr3mn5r18f01m7gx98j5ayyp-minimal-env    9.9 MiB
 ```
 
 ```console
